@@ -20,6 +20,7 @@ nbformat==4.4.0
 osmread==0.2
 plotly==2.4.1
 protobuf==3.0.0b3
+pyproj==1.9.5.1
 pytz==2018.3
 requests==2.18.4
 six==1.11.0

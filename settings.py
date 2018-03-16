@@ -1,4 +1,4 @@
-OSM_FILE = 'map1/map.osm'
-MAP_NET_XML = 'map1/map.net.xml'
-MAP_SUMO_CFG = "map1/map.sumo.cfg"
+OSM_FILE = 'map2/map.osm'
+MAP_NET_XML = 'map2/map.net.xml'
+MAP_SUMO_CFG = "map2/map.sumo.cfg"
 TOOLS_DIR = "/usr/share/sumo/tools/"
