@@ -1,10 +1,10 @@
 import pyrebase
 
 config = {
-    "apiKey": "AIzaSyDdmlolGTVHtLn9uajIvp_H8lJIQarppxo",
-    "authDomain": "helloudacity-1195.firebaseapp.com",
-    "databaseURL": "https://helloudacity-1195.firebaseio.com/",
-    "storageBucket": "helloudacity-1195.appspot.com"
+    "apiKey": "AIzaSyAr54bCYMwvqBdLHNjKF5HsvoJx29MlmGo",
+    "authDomain": "martlet-inno.firebaseapp.com",
+    "databaseURL": "https://martlet-inno.firebaseio.com/",
+    "storageBucket": "martlet-inno.appspot.com"
 }
 
 firebase = pyrebase.initialize_app(config)
@@ -14,8 +14,9 @@ db = firebase.database()
 if __name__ == '__main__':
     # data to save
     data = {
-        "name": "Mortimer 'Morty' Smith"
+        "name2": "Mortimer 'Morty' Smith"
     }
 
     # Pass the user's idToken to the push method
-    results = db.child("sensors").set(data)
+    results = db.child("sensors").update(data)
+    print(results)
