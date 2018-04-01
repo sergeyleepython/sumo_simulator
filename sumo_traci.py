@@ -1,3 +1,4 @@
+import json
 import sys
 import datetime
 import time
@@ -5,24 +6,19 @@ import time
 import traci
 # import traci.constants as tc
 import sumolib
+import paho.mqtt.publish as publish
 
 from settings import TOOLS_DIR, MAP_NET_XML, MAP_SUMO_CFG
 from sumo_osm_parse import get_road_attributes
 from firebase import db
+from mqtt_publisher import publish_to_mqtt
 
 sys.path.append(TOOLS_DIR)
-
-sumoBinary = "/usr/bin/sumo-gui"
-sumoCmd = [sumoBinary, "-c", MAP_SUMO_CFG]
-
-# netconvert --osm-files map.osm -o map.net.xml
-# polyconvert --net-file map.net.xml --osm-files map.osm --type-file typemap.xml -o map.poly.xml
-# sumo-gui map.sumo.cfg
 
 net = sumolib.net.readNet(MAP_NET_XML)
 suv_1 = "suv_1"
 truck_1 = "truck_1"
-traci.start(["sumo-gui", "-c", MAP_SUMO_CFG])
+traci.start(["sumo", "-c", MAP_SUMO_CFG])
 simulation = traci.simulation
 vehicle = traci.vehicle
 step = 0
@@ -64,10 +60,20 @@ while True:
     data['sim_time'] = sim_time
     print('Sim time: {}'.format(sim_time))
 
-    data = {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"): data}
-    print(data)
-    db.child("sensors").child("veh1-subassies-braking_system-FL_element-type1-1").update(data)
-    # time.sleep(1)
+    current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data = {current_timestamp: data}
+    # write to firebase
+    # db.child("sensors").child("veh1-subassies-braking_system-FL_element-type1-1").update(data)
+
+
+    # MQTT data
+    data_for_mqtt = {'timestamp': current_timestamp, 'mission_id': 1, 'driver_id': 'sergey', 'vehicle_id': 1,
+                     'vehicle_type': 'suv', 'distance': distance, 'speed': speed, 'location': {'lon': lon, 'lat': lat}}
+    json_data = json.dumps(data_for_mqtt)
+    print(json_data)
+    publish_to_mqtt(topic="test", data=json_data)
+
+    time.sleep(1)
 traci.close()
 
 # elevation
