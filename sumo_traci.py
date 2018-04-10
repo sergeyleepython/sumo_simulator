@@ -1,17 +1,16 @@
 import json
 import sys
 import datetime
-import time
 
 import traci
 # import traci.constants as tc
 import sumolib
-import paho.mqtt.publish as publish
 
 from settings import TOOLS_DIR, MAP_NET_XML, MAP_SUMO_CFG
 from sumo_osm_parse import get_road_attributes
 from firebase import db
-from mqtt_publisher import publish_to_mqtt
+from mqtt_simple_publisher import publish_to_mqtt
+from sensors import *
 
 sys.path.append(TOOLS_DIR)
 
@@ -22,10 +21,12 @@ traci.start(["sumo", "-c", MAP_SUMO_CFG])
 simulation = traci.simulation
 vehicle = traci.vehicle
 step = 0
-while True:
+
+
+def make_step():
     data = {}
-    step += 1
-    print("step", step)
+    # step += 1
+    # print("step", step)
     traci.simulationStep()
 
     speed = vehicle.getSpeed(suv_1) * 3.6
@@ -67,14 +68,46 @@ while True:
 
 
     # MQTT data
-    data_for_mqtt = {'timestamp': current_timestamp, 'mission_id': 1, 'driver_id': 'sergey', 'vehicle_id': 1,
-                     'vehicle_type': 'suv', 'distance': distance, 'speed': speed, 'location': {'lon': lon, 'lat': lat}}
+    data_for_mqtt = {'timestamp': current_timestamp,
+                     'mission_id': 1,
+                     'driver_id': 'sergey',
+                     'vehicle_id': 1,
+                     'vehicle_type': 'suv',
+                     'distance': distance,
+                     'speed': speed,
+                     'location': {'lon': lon, 'lat': lat}}
+
+    data_for_mqtt = {"timestamp": current_timestamp,
+                     "mission_id": 1,
+                     "vehicle_id": 1,
+                     "location": {
+                         "lat": lat,
+                         "lon": lon,
+                         "alt": 104
+                     },
+                     "sensors": {
+                         "speed": speed,
+                         "barometric_pressure": barometric_pressure(current_timestamp, speed),
+                         "engine_coolant_temp": engine_coolant_temp(current_timestamp, speed),
+                         "engine_load": engine_load(current_timestamp, speed),
+                         "ambient_air_temp": ambient_air_temp(current_timestamp, speed),
+                         "intake_manifold_pressure": intake_manifold_pressure(current_timestamp, speed),
+                         "maf": maf(current_timestamp, speed),
+                         "air_intake_temp": air_intake_temp(current_timestamp, speed),
+                         "engine_runtime": engine_runtime(current_timestamp, speed),
+                         "throttle_pos": throttle_pos(current_timestamp, speed),
+                         "trouble_codes": "C0300",
+                         "battery_voltage": battery_voltage(current_timestamp, speed)
+                     },
+                     "road_condition": road_attrs
+                     }
+
     json_data = json.dumps(data_for_mqtt)
     print(json_data)
-    publish_to_mqtt(topic="test", data=json_data)
+    # publish_to_mqtt(topic="test", data=json_data)
 
-    time.sleep(1)
-traci.close()
+    # time.sleep(1)
+    return json_data  # traci.close()
 
 # elevation
 # https://maps.googleapis.com/maps/api/elevation/json?locations=48.76031971084903,55.726867507763444
