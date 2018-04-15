@@ -33,6 +33,9 @@ def make_step():
     data['speed'] = speed
     print('Speed', speed)
 
+    speed_truck = vehicle.getSpeed(truck_1) * 3.6
+    print('Speed', speed_truck)
+
     accel = vehicle.getAccel(suv_1)
     data['accel'] = accel
     print('Acceleration', accel)
@@ -52,6 +55,10 @@ def make_step():
     data['lat'] = lat
     data['lon'] = lon
     print(lat, lon)
+
+    x_truck, y_truck = vehicle.getPosition(truck_1)
+    lon_truck, lat_truck = net.convertXY2LonLat(x_truck, y_truck)
+    print(lat_truck, lon_truck)
 
     distance = vehicle.getDistance(suv_1)
     data['distance'] = distance
@@ -77,7 +84,7 @@ def make_step():
                      'speed': speed,
                      'location': {'lon': lon, 'lat': lat}}
 
-    data_for_mqtt = {"timestamp": current_timestamp,
+    data_for_mqtt = {"timestamp": int(datetime.datetime.now().timestamp() * 1000),
                      "mission_id": 1,
                      "vehicle_id": 1,
                      "location": {
@@ -86,28 +93,99 @@ def make_step():
                          "alt": 104
                      },
                      "sensors": {
-                         "speed": speed,
-                         "barometric_pressure": barometric_pressure(current_timestamp, speed),
-                         "engine_coolant_temp": engine_coolant_temp(current_timestamp, speed),
-                         "engine_load": engine_load(current_timestamp, speed),
-                         "ambient_air_temp": ambient_air_temp(current_timestamp, speed),
-                         "intake_manifold_pressure": intake_manifold_pressure(current_timestamp, speed),
-                         "maf": maf(current_timestamp, speed),
-                         "air_intake_temp": air_intake_temp(current_timestamp, speed),
-                         "engine_runtime": engine_runtime(current_timestamp, speed),
-                         "throttle_pos": throttle_pos(current_timestamp, speed),
-                         "trouble_codes": "C0300",
-                         "battery_voltage": battery_voltage(current_timestamp, speed)
+                         "speed": str(speed) + 'km\/h',
+                         "barometric_pressure": '98kPa',
+                         "engine_coolant_temp": '96C',
+                         "fuel-level": 'NODATA',
+                         "engine_load": '31,8%',
+                         "ambient_air_temp": '9C',
+                         "engine-rpm": "748RPM",
+                         "intake_manifold_pressure": "NODATA",
+                         "maf": "3,66g\/s",
+                         "long-term-fuel-trim-bank-2": "NODATA",
+                         "fuel-type": "NODATA",
+                         "air_intake_temp": "28C",
+                         "fuel-pressure": "NODATA",
+                         "short-term-fuel-trim-bank-2": "NODATA",
+                         "short-term-fuel-trim-bank-1": "-2,3%",
+                         "engine-runtime": "00:17:07",
+                         "throttle-pos": "12,9%",
+                         "dtc-number": "MIL is OFF0 codes",
+                         "trouble-codes": "C0300\n",
+                         "timing-advance": "59,6%",
+                         "equiv-ratio": "1,0%"
                      },
-                     "road_condition": road_attrs
+                     # "road_condition": road_attrs
                      }
+
+    data_for_mqtt = {"timestamp": int(datetime.datetime.now().timestamp() * 1000), "mission_id": 1, "vehicle_id": 1,
+                     "location": {"lon": lon, "lat": lat, "alt": 145},
+                     "sensors": [{"slug": "barometric-pressure", "warning": True, "value": "0"},
+                                 {"slug": "engine-coolant-temp", "warning": False, "value": "-40.0"},
+                                 {"slug": "fuel-level", "warning": True, "value": "0.0"},
+                                 {"slug": "engine-load", "warning": True, "value": "0.0"},
+                                 {"slug": "ambient-air-temp", "warning": True, "value": "-40.0"},
+                                 {"slug": "engine-rpm", "warning": True, "value": "0"},
+                                 {"slug": "intake-manifold-pressure", "warning": True, "value": "0"},
+                                 {"slug": "maf", "warning": True, "value": "0.0"},
+                                 {"slug": "term-fuel-trim-bank-1", "warning": False},
+                                 {"slug": "fuel-economy", "warning": False},
+                                 {"slug": "long-term-fuel-trim-bank-2", "warning": True, "value": "-100.0"},
+                                 {"slug": "fuel-type", "warning": True, "value": "0"},
+                                 {"slug": "air-intake-temp", "warning": True, "value": "-40.0"},
+                                 {"slug": "fuel-pressure", "warning": True, "value": "0"},
+                                 {"slug": "speed", "warning": True, "value": str(speed)},
+                                 {"slug": "short-term-fuel-trim-bank-2", "warning": True, "value": "-100.0"},
+                                 {"slug": "short-term-fuel-trim-bank-1", "warning": True, "value": "-100.0"},
+                                 {"slug": "engine-runtime", "warning": True, "value": "0"},
+                                 {"slug": "throttle-pos", "warning": True, "value": "0.0"},
+                                 {"slug": "dtc-number", "warning": True, "value": "MIL is OFF0 codes"},
+                                 {"slug": "trouble-codes", "warning": False, "value": "C0300\n"},
+                                 {"slug": "timing-advance", "warning": True, "value": "0.0"},
+                                 {"slug": "equiv-ratio", "warning": True, "value": "0.0"}]}
+
+    data_for_mqtt_truck = {"timestamp": int(datetime.datetime.now().timestamp() * 1000), "mission_id": 1,
+                           "vehicle_id": 2,
+                           "location": {"lon": lon_truck, "lat": lat_truck, "alt": 145},
+                           "sensors": [{"slug": "barometric-pressure", "warning": True, "value": "0"},
+                                       {"slug": "engine-coolant-temp", "warning": False, "value": "-40.0"},
+                                       {"slug": "fuel-level", "warning": True, "value": "0.0"},
+                                       {"slug": "engine-load", "warning": True, "value": "0.0"},
+                                       {"slug": "ambient-air-temp", "warning": True, "value": "-40.0"},
+                                       {"slug": "engine-rpm", "warning": True, "value": "0"},
+                                       {"slug": "intake-manifold-pressure", "warning": True, "value": "0"},
+                                       {"slug": "maf", "warning": True, "value": "0.0"},
+                                       {"slug": "term-fuel-trim-bank-1", "warning": False},
+                                       {"slug": "fuel-economy", "warning": False},
+                                       {"slug": "long-term-fuel-trim-bank-2", "warning": True, "value": "-100.0"},
+                                       {"slug": "fuel-type", "warning": True, "value": "0"},
+                                       {"slug": "air-intake-temp", "warning": True, "value": "-40.0"},
+                                       {"slug": "fuel-pressure", "warning": True, "value": "0"},
+                                       {"slug": "speed", "warning": True, "value": str(speed_truck)},
+                                       {"slug": "short-term-fuel-trim-bank-2", "warning": True, "value": "-100.0"},
+                                       {"slug": "short-term-fuel-trim-bank-1", "warning": True, "value": "-100.0"},
+                                       {"slug": "engine-runtime", "warning": True, "value": "0"},
+                                       {"slug": "throttle-pos", "warning": True, "value": "0.0"},
+                                       {"slug": "dtc-number", "warning": True, "value": "MIL is OFF0 codes"},
+                                       {"slug": "trouble-codes", "warning": False, "value": "C0300\n"},
+                                       {"slug": "timing-advance", "warning": True, "value": "0.0"},
+                                       {"slug": "equiv-ratio", "warning": True, "value": "0.0"}]}
 
     json_data = json.dumps(data_for_mqtt)
     print(json_data)
     # publish_to_mqtt(topic="test", data=json_data)
 
     # time.sleep(1)
-    return json_data  # traci.close()
+
+    json_data_truck = json.dumps(data_for_mqtt_truck)
+    print(json_data_truck)
+
+    result = [
+        json_data,
+        json_data_truck
+    ]
+
+    return result  # traci.close()
 
 # elevation
 # https://maps.googleapis.com/maps/api/elevation/json?locations=48.76031971084903,55.726867507763444
