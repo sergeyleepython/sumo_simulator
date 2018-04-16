@@ -1,5 +1,6 @@
 import random
 
+# Возможно это нужно сделать классом, чтобы сохранять предыдущие значения и передавать третьим аргументом в функции.
 
 def barometric_pressure(timestamp, speed):
     return random.uniform(0.5, 4.5)
